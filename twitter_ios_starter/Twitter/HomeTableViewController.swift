@@ -26,10 +26,18 @@ class HomeTableViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        loadTweets()
         
         myRefreshControl.addTarget(self, action: #selector(loadTweets), for: .valueChanged)
         tableView.refreshControl = myRefreshControl
+        self.tableView.rowHeight = UITableView.automaticDimension
+        self.tableView.estimatedRowHeight = 150
+        NotificationCenter.default.addObserver(self, selector: #selector(loadTweets), name: NSNotification.Name(rawValue:  "PeformAfterPresenting"), object: nil)
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        self.loadTweets()
+        print("hey")
     }
 
     @objc func loadTweets(){
@@ -51,6 +59,8 @@ class HomeTableViewController: UITableViewController {
             
             self.tableView.reloadData()
             self.myRefreshControl.endRefreshing()
+            
+            //print(self.tweetArray)
             
         }, failure: { (Error) in
             print("Could not get the tweets!")
@@ -93,6 +103,8 @@ class HomeTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "tweetCell", for: indexPath) as! TweetCellTableViewCell
         
+        //cell.timeLabel.text = getRelativeTime(timeString: (tweetArray[indexPath.row] ["created_at"] as? String))
+        
         let user = tweetArray[indexPath.row]["user"] as! NSDictionary
         
         
@@ -106,6 +118,10 @@ class HomeTableViewController: UITableViewController {
             cell.profileImageView.image = UIImage(data: imageData)
         }
         
+        cell.setFavorite((tweetArray[indexPath.row]["favorited"] as! Bool))
+        cell.tweetId = tweetArray[indexPath.row]["id"] as! Int
+        cell.setRetweeted(tweetArray[indexPath.row]["retweeted"] as! Bool)
+ 
         return cell
     }
     override func numberOfSections(in tableView: UITableView) -> Int {
